@@ -1,8 +1,8 @@
 require 'json' unless defined?(JSON)
 
 #api exception
-class ApiException < StandardError;end
-class AuthenticationError < StandardError;end
+class SendgridApiException < StandardError;end
+class SendgridAuthenticationError < StandardError;end
 
 module Faraday
   class Response::SendGridWebApi < Response::Middleware
@@ -23,11 +23,11 @@ module Faraday
     def check_status(env)
       status = env[:status].to_s
       if  status == "403" || status == "401"
-        raise AuthenticationError.new(error_message(env[:body]))
+        raise SendgridAuthenticationError.new(error_message(env[:body]))
       elsif status =~ /^5/
-        raise ApiException.new("The API call was unsuccessful. You should retry later.")
+        raise SendgridApiException.new("The API call was unsuccessful. You should retry later.")
       elsif status =~ /^4/
-        raise ApiException.new(error_message(env[:body]))
+        raise SendgridApiException.new(error_message(env[:body]))
       end
     end
 
